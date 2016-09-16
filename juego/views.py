@@ -22,25 +22,46 @@ def jugar(request, partida_id):
             jugada = Jugada.objects.create(jugador=jugador, 
                 partida=partida, apuesta=apuesta, bien=bien, 
                 regular=regular, ronda=ronda)
+            if bien == 4:
+                
+                jugador.activo=False
+                
+                jugador.save()
             participantes = list(partida.participantes.all())
+                            
             print("turno de", partida.turno_de)
             try:
                 partida.turno_de = participantes[participantes.index(jugador) + 1]
             except IndexError:
                 partida.ronda = partida.ronda + 1
-                partida.turno_de = participantes[0]
+                partida.turno_de = partida.participantes.filter(activo=True).first()
+                
+            partida.participantes= partida.participantes.filter(activo=True)
+
+            
+            
+            
+        
             
             partida.save()
-
-            return redirect('jugar', partida_id=partida_id)
+            
+            if len(partida.participantes.all()) ==0:
+                        
+                print("Fin de la Partida")
+            
+            else:
+                     
+        
+                return redirect('jugar', partida_id=partida_id)
+   
     else: 
         form= IngreseNumero()
     return render(request, 'comenzar.html', 
         {
         'jugadas':jugadas,
          'form': form,
-         'partida': partida
-        
+         'partida': partida,
+         'jugador':jugador,
         })
 
 def inicio(request):
